@@ -19,8 +19,7 @@
 # Author: Yaacov Zamir (2011) <kobi.zamir@gmail.com>
 
 import cairo
-import pango
-import pangocairo
+from gi.repository import Pango, PangoCairo
 
 class CaGraphStyle:
     ''' graph style '''
@@ -147,12 +146,10 @@ class CaGraphFile():
         context.translate(x, y)
         context.rotate(angle)
         
-        # create pango context
-        pangocairo_context = pangocairo.CairoContext(context)
-        pangocairo_context.set_antialias(cairo.ANTIALIAS_SUBPIXEL)
+        context.set_antialias(cairo.ANTIALIAS_SUBPIXEL)
 
         # set font
-        layout = pangocairo_context.create_layout()
+        layout = PangoCairo.create_layout(context)
         fontname = "%s %d" % (family, size)
         font = pango.FontDescription(fontname)
         layout.set_font_description(font)
@@ -162,8 +159,8 @@ class CaGraphFile():
         
         # drow text
         layout.set_text(text)
-        pangocairo_context.update_layout(layout)
-        pangocairo_context.show_layout(layout)
+        PangoCairo.update_layout(context, layout)
+        PangoCairo.show_layout(context, layout)
         
         context.restore()
     

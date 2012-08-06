@@ -18,11 +18,6 @@
 # Copyright (C) 2011 Yaacov Zamir <kobi.zamir@gmail.com>
 # Author: Yaacov Zamir (2011) <kobi.zamir@gmail.com>
 
-import pygtk
-pygtk.require('2.0')
-
-import gtk, gtk.glade
-
 class CaGridStyle:
     ''' grid stye class '''
     

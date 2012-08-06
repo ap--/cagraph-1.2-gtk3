@@ -18,20 +18,16 @@
 # Copyright (C) 2011 Yaacov Zamir <kobi.zamir@gmail.com>
 # Author: Yaacov Zamir (2011) <kobi.zamir@gmail.com>
 
-import cairo
-import pygtk
-pygtk.require('2.0')
-
-import gtk, gtk.glade
+from gi.repository import Gtk, GdK
 
 from ca_graph_file import CaGraphFile, CaGraphStyle
 
-class CaGraph(gtk.DrawingArea, CaGraphFile):
-    ''' pygtk cairo charting class '''
+class CaGraph(Gtk.DrawingArea, CaGraphFile):
+    ''' Gtk3 cairo charting class '''
     
     def __init__(self, main_window = None):
         ''' init event handlers and default parameters '''
-        gtk.DrawingArea.__init__(self)
+        Gtk.DrawingArea.__init__(self)
         CaGraphFile.__init__(self)
         
         self.main_window = main_window
@@ -41,20 +37,20 @@ class CaGraph(gtk.DrawingArea, CaGraphFile):
         self.pointer_y = 0
         
         # events
-        self.connect("expose_event", self.expose)
+        self.connect("draw", self.draw)
         self.connect("motion_notify_event", self.motion_notify)
         self.connect("scroll_event", self.scroll)
         self.connect("leave_notify_event", self.button_release)
         self.connect("button_press_event", self.button_press)
         self.connect("button_release_event", self.button_release)
         
-        self.set_events(gtk.gdk.EXPOSURE_MASK
-            | gtk.gdk.LEAVE_NOTIFY_MASK
-            | gtk.gdk.SCROLL_MASK
-            | gtk.gdk.BUTTON_PRESS_MASK
-            | gtk.gdk.BUTTON_RELEASE_MASK
-            | gtk.gdk.POINTER_MOTION_MASK
-            | gtk.gdk.POINTER_MOTION_HINT_MASK)
+        self.set_events(Gdk.EventMask.EXPOSURE_MASK
+            | Gdk.EventMask.LEAVE_NOTIFY_MASK
+            | Gdk.EventMask.SCROLL_MASK
+            | Gdk.EventMask.BUTTON_PRESS_MASK
+            | Gdk.EventMask.BUTTON_RELEASE_MASK
+            | Gdk.EventMask.POINTER_MOTION_MASK
+            | Gdk.EventMask.POINTER_MOTION_HINT_MASK)
     
     def button_press(self, widget, event):
     
@@ -62,12 +58,12 @@ class CaGraph(gtk.DrawingArea, CaGraphFile):
           return
         
         # if this is double click auto set ranges
-        if event.type == gtk.gdk._2BUTTON_PRESS:
+        if event.type == Gdk.EventType._2BUTTON_PRESS:
             self.auto_set_range()
             self.redraw(self.main_window)
             return
         
-        self.main_window.window.set_cursor(gtk.gdk.Cursor (gtk.gdk.HAND1))
+        self.main_window.window.set_cursor(Gdk.Cursor(Gdk.CursorType.HAND1))
         
         self.pointer_x = event.x
         self.pointer_y = event.y
@@ -79,7 +75,7 @@ class CaGraph(gtk.DrawingArea, CaGraphFile):
         if not self.main_window:
           return
           
-        self.main_window.window.set_cursor(gtk.gdk.Cursor (gtk.gdk.ARROW))
+        self.main_window.window.set_cursor(Gdk.Cursor(Gdk.CursorType.ARROW))
         self.pan = False
         
     def motion_notify(self, widget, event):
@@ -118,7 +114,7 @@ class CaGraph(gtk.DrawingArea, CaGraphFile):
         for axis in self.axiss:
             diff = (axis.max - axis.min) / 10.0
             
-            if event.direction == gtk.gdk.ScrollDirection(gtk.gdk.SCROLL_DOWN):
+            if event.direction == Gdk.ScrollDirection.DOWN:
               diff *= -1
             
             axis.min = axis.min - diff
@@ -126,21 +122,17 @@ class CaGraph(gtk.DrawingArea, CaGraphFile):
 
         self.redraw(self.main_window)
         
-    def expose(self, widget, event):
-        ''' handle widget expose event '''
+    def draw(self, widget, cr):
+        ''' handle widget draw event '''
         
         # get widgetcontext
-        self.context = widget.window.cairo_create()
+        self.context = cr 
         rect = self.get_allocation()
         
         # get width and height
         self.graph_style.width = rect.width
         self.graph_style.height = rect.height
         
-        # set a clip region for the expose event
-        self.context.rectangle(event.area.x, event.area.y,
-                               event.area.width, event.area.height)
-        self.context.clip()
         self.draw_graph()
         
         self.context.set_line_width(self.graph_style.pointer_width)
