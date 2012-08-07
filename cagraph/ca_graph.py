@@ -25,12 +25,11 @@ from ca_graph_file import CaGraphFile, CaGraphStyle
 class CaGraph(Gtk.DrawingArea, CaGraphFile):
     ''' Gtk3 cairo charting class '''
     
-    def __init__(self, main_window = None):
+    def __init__(self):
         ''' init event handlers and default parameters '''
         Gtk.DrawingArea.__init__(self)
         CaGraphFile.__init__(self)
         
-        self.main_window = main_window
         self.pan = False
         
         self.pointer_x = 0
@@ -51,19 +50,15 @@ class CaGraph(Gtk.DrawingArea, CaGraphFile):
             | Gdk.EventMask.BUTTON_RELEASE_MASK
             | Gdk.EventMask.POINTER_MOTION_MASK
             | Gdk.EventMask.POINTER_MOTION_HINT_MASK)
-    
+
     def button_press(self, widget, event):
-    
-        if not self.main_window:
-          return
-        
         # if this is double click auto set ranges
         if event.type == Gdk.EventType._2BUTTON_PRESS:
             self.auto_set_range()
-            self.redraw(self.main_window)
+            self.redraw()
             return
         
-        self.main_window.window.set_cursor(Gdk.Cursor(Gdk.CursorType.HAND1))
+        self.get_window().set_cursor(Gdk.Cursor(Gdk.CursorType.HAND1))
         
         self.pointer_x = event.x
         self.pointer_y = event.y
@@ -71,20 +66,11 @@ class CaGraph(Gtk.DrawingArea, CaGraphFile):
         self.pan = True
     
     def button_release(self, widget, event):
-    
-        if not self.main_window:
-          return
-          
-        self.main_window.window.set_cursor(Gdk.Cursor(Gdk.CursorType.ARROW))
+        self.get_window().set_cursor(Gdk.Cursor(Gdk.CursorType.ARROW))
         self.pan = False
         
     def motion_notify(self, widget, event):
-        
-        if not self.main_window:
-          return
-        
         style = self.graph_style
-        
         if self.pan:
             for axis in self.axiss:
                 #if axis.axis_style.side in ['bottom', 'top']:
@@ -102,15 +88,11 @@ class CaGraph(Gtk.DrawingArea, CaGraphFile):
         
         if self.pan or \
                 style.draw_pointer or style.draw_pointer_y:
-            self.redraw(self.main_window)
+            self.redraw()
         
         return False
         
     def scroll(self, widget, event):
-        
-        if not self.main_window:
-          return
-
         for axis in self.axiss:
             diff = (axis.max - axis.min) / 10.0
             
@@ -120,7 +102,7 @@ class CaGraph(Gtk.DrawingArea, CaGraphFile):
             axis.min = axis.min - diff
             axis.max = axis.max + diff
 
-        self.redraw(self.main_window)
+        self.redraw()
         
     def draw(self, widget, cr):
         ''' handle widget draw event '''
@@ -156,8 +138,7 @@ class CaGraph(Gtk.DrawingArea, CaGraphFile):
                 
         return False
     
-    def redraw(self, main_window):
+    def redraw(self):
         ''' invalidate widget window '''
-        rect = self.get_allocation()
-        main_window.window.invalidate_rect(rect, True)
-    
+        self.queue_draw()
+
