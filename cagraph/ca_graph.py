@@ -18,7 +18,7 @@
 # Copyright (C) 2011 Yaacov Zamir <kobi.zamir@gmail.com>
 # Author: Yaacov Zamir (2011) <kobi.zamir@gmail.com>
 
-from gi.repository import Gtk, GdK
+from gi.repository import Gtk, Gdk
 
 from ca_graph_file import CaGraphFile, CaGraphStyle
 
